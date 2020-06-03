@@ -15,16 +15,15 @@ function parseURL(source) {
   }
 }
 
-function resolveURL(url) {
-  switch (url.protocol) {
-    case 'data:':
-    case 'file:':
-    case 'http:':
-    case 'https:':
-      return url.href;
-    default:
-      throw new Error(`Cannot resolve URL protocol: ${url.protocol}`);
+function isValidURL(url) {
+  if (url && ['data:', 'file:', 'http:', 'https:'].includes(url.protocol)) {
+    return true;
   }
+  return false;
+}
+
+function resolveURL(url) {
+  return url.href;
 }
 
 async function loadURL(url, fetchOpts) {
@@ -56,8 +55,6 @@ async function loadURL(url, fetchOpts) {
               return rewriteRelativeImports(finalURL, contentType, text);
             })
       );
-    default:
-      throw new Error(`Cannot load URL protocol: ${url.protocol}`);
   }
 }
 
@@ -65,11 +62,11 @@ export default function urlResolve(fetchOpts) {
   return {
     resolveId(source) {
       const url = parseURL(source);
-      return url ? resolveURL(url) : null;
+      return isValidURL(url) ? resolveURL(url) : null;
     },
     load(id) {
       const url = parseURL(id);
-      return url ? loadURL(url, fetchOpts) : null;
+      return isValidURL(url) ? loadURL(url, fetchOpts) : null;
     }
   };
 }
